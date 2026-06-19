@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Chức Năng Thông Báo & Chi Tiết Công Việc - NOTE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #0b3c5d;
+            --sidebar-blue: #0a4b7c;
+            --text-color: #333;
+            --gray-light: #f4f5f7;
+            --border-color: #e0e0e0;
+            --red-alert: #d9383a;
+            --blue-tag: #007bff;
+            --gray-tag: #6c757d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            background-color: #fff;
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        /* --- TOP BAR --- */
+        .topbar {
+            background-color: var(--primary-blue);
+            color: white;
+            height: 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo-area {
+            font-weight: bold;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo-n {
+            background: linear-gradient(45deg, #ff007f, #7f00ff);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: white;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+        }
+
+        .nav-menu li {
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .search-box {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            color: white;
+            outline: none;
+            width: 150px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .demo-tag {
+            font-size: 11px;
+            opacity: 0.8;
+            text-align: right;
+        }
+
+        .bell-icon-wrapper {
+            position: relative;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .bell-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--red-alert);
+            color: white;
+            font-size: 9px;
+            padding: 2px 5px;
+            border-radius: 50%;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            background-color: rgba(255,255,255,0.1);
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .avatar-circle {
+            width: 28px;
+            height: 28px;
+            background-color: #ddd;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* --- MAIN BODY --- */
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar trái */
+        .sidebar {
+            width: 220px;
+            background-color: var(--sidebar-blue);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding-top: 10px;
+            flex-shrink: 0;
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .menu-item:hover, .menu-item.active {
+            background-color: rgba(0,0,0,0.15);
+        }
+
+        /* --- CỘT GIỮA: CHI TIẾT CÔNG VIỆC --- */
+        .content-center {
+            flex: 1;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            color: #888;
+            font-size: 14px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .detail-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+        }
+
+        .detail-title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .detail-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #b57c1e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .detail-user-info h4 {
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .detail-user-info span {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .close-detail-btn {
+            cursor: pointer;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .detail-body {
+            padding: 20px;
+            flex: 1;
+        }
+
+        .task-category {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .task-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #111;
+        }
+
+        .task-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .badge-status { background-color: var(--blue-tag); }
+        .badge-time { background-color: var(--gray-tag); }
+        .badge-type { background-color: #343a40; }
+
+        .comment-box-wrapper {
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 15px;
+            background-color: #fdfdfd;
+            margin-top: 15px;
+        }
+
+        .comment-box-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 8px;
+            border-bottom: 1px dashed #eee;
+            padding-bottom: 5px;
+        }
+
+        .comment-content {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        /* --- PANEL THÔNG BÁO (CỘT PHẢI) --- */
+        .notification-panel {
+            width: 420px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        .noti-header {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .noti-header-title {
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .noti-header-actions {
+            display: flex;
+            gap: 15px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .noti-sub-title {
+            padding: 10px 15px;
+            font-size: 13px;
+            color: #0a4b7c;
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+
+        .noti-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .noti-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .noti-item:hover, .noti-item.active-item {
+            background-color: #edf4f9;
+        }
+
+        .noti-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background-color: #b57c1e;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .noti-body {
+            font-size: 13px;
+            line-height: 1.4;
+            color: #444;
+            width: 100%;
+        }
+
+        .noti-text {
+            color: #111;
+            font-weight: 500;
+        }
+
+        /* Tên công việc phụ bên dưới dòng thông báo chính */
+        .noti-task-name {
+            font-size: 12px;
+            color: #555;
+            margin-top: 3px;
+            font-style: italic;
+        }
+
+        .noti-highlight-red {
+            color: var(--red-alert);
+            font-weight: bold;
+        }
+
+        .noti-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .noti-time::before {
+            content: "";
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            background-color: #ccc;
+            border-radius: 50%;
+        }
+
+        .system-tag {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 4px 10px;
+            background-color: #e8f4fd;
+            color: #0d47a1;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            border: 1px solid #d0e7fc;
+        }
+
+        .view-all-btn {
+            padding: 12px;
+            text-align: center;
+            color: #0a4b7c;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+
+    <header class="topbar">
+        <div class="topbar-left">
+            <div class="logo-area"><span class="logo-n">N</span> NOTE</div>
+            <ul class="nav-menu">
+                <li>NHẬP LIỆU <i class="fa-solid fa-caret-down"></i></li>
+                <li>BÁO CÁO <i class="fa-solid fa-caret-down"></i></li>
+                <li>DANH MỤC <i class="fa-solid fa-caret-down"></i></li>
+            </ul>
+            <input type="text" class="search-box" placeholder="Tìm kiếm...">
+        </div>
+        
+        <div class="topbar-right">
+            <div class="demo-tag"><b>DEMO</b><br>BAN CÔNG NGHỆ DEMO</div>
+            
+            <div class="bell-icon-wrapper">
+                <i class="fa-regular fa-bell fa-lg"></i>
+                <span class="bell-badge" id="noti-count">6</span>
+            </div>
+
+            <div class="user-profile" id="userRoleBtn" onclick="switchRole()" title="Click để chuyển đổi vai trò Lãnh đạo / Chuyên viên">
+                <div class="avatar-circle">LK</div>
+                <div style="font-size: 13px;">
+                    <span id="current-user-name" style="font-weight: bold;">Lãnh đạo</span>
+                    <div style="font-size: 10px; opacity: 0.8;">Click đổi vai trò</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <aside class="sidebar">
+            <div class="menu-item"><i class="fa-solid fa-house"></i> Tổng quan</div>
+            <div class="menu-item"><i class="fa-solid fa-sitemap"></i> Sơ đồ tổ chức</div>
+            <div class="menu-item"><i class="fa-solid fa-user-tie"></i> Hồ sơ nhân sự</div>
+            <div class="menu-item active"><i class="fa-solid fa-briefcase"></i> Công việc</div>
+            <div class="menu-item"><i class="fa-solid fa-signature"></i> Ký số</div>
+            <div class="menu-item"><i class="fa-solid fa-star"></i> Đánh giá CBVC</div>
+            <div class="menu-item"><i class="fa-solid fa-gear"></i> Thiết lập</div>
+        </aside>
+
+        <main class="content-center" id="detailContainer">
+            <div class="empty-state">
+                <i class="fa-regular fa-folder-open fa-3x" style="margin-bottom: 10px; color: #ccc;"></i>
+                <p>Chọn một thông báo ở danh sách bên phải để xem chi tiết công việc</p>
+            </div>
+        </main>
+
+        <div class="notification-panel">
+            <div class="noti-header">
+                <span class="noti-header-title">Thông báo</span>
+                <div class="noti-header-actions">
+                    <i class="fa-solid fa-check-double" title="Đã đọc tất cả"></i>
+                    <i class="fa-solid fa-rotate" title="Làm mới"></i>
+                    <i class="fa-solid fa-xmark" title="Đóng"></i>
+                </div>
+            </div>
+            <div class="noti-sub-title">Trước đây</div>
+            
+            <div class="noti-list" id="notificationList">
+                </div>
+            
+            <div class="view-all-btn">Xem tất cả</div>
+        </div>
+    </div>
+
+    <script>
+        const dataNotifications = {
+            LANH_DAO: [
+                {
+                    id: "L1",
+                    system: "Chuyên viên gửi kế hoạch công việc lên lãnh đạo",
+                    content: "<b>Trần Văn A</b> đã gửi kế hoạch công việc cần bạn phê duyệt",
+                    time: "7 ngày trước",
+                    taskName: "Tham mưu văn bản hành chính",
+                    description: "Tham mưu các văn bản hành chính được nhận từ lãnh đạo trực tiếp quản lý nhằm tối ưu hóa quy trình luân chuyển hồ sơ.",
+                    tag: "Cần làm", start: "10/06/2026", end: "20/06/2026", actionTime: "19/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L2",
+                    system: "Chuyên viên báo cáo tiến độ công việc",
+                    content: "<b>Trần Văn A</b> đã gửi báo cáo tiến độ công việc",
+                    time: "7 ngày trước",
+                    taskName: "Lập công văn gửi đại biểu",
+                    description: "Hoàn thiện danh sách đại biểu và dự thảo nội dung công văn kính mời tham dự đại hội cổ đông quý 2.",
+                    tag: "Đang làm", start: "12/06/2026", end: "23/06/2026", actionTime: "15/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L3",
+                    system: "Chuyên viên gia hạn công việc",
+                    content: "<b>Trần Văn A</b> đã xin gia hạn công việc",
+                    time: "7 ngày trước",
+                    taskName: "Xây dựng hệ thống đồng bộ dữ liệu cán bộ",
+                    description: "Đơn xin gia hạn thêm 3 ngày do API từ phía đối tác cung cấp phản hồi chậm hơn dự kiến.",
+                    tag: "Xin gia hạn", start: "01/06/2026", end: "15/06/2026", actionTime: "14/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L4",
+                    system: "Chuyên viên đã tiếp nhận việc: khi chuyên viên nhấn tiếp nhận công việc trên giao diện hệ thống",
+                    content: "<b>Trần Văn A</b> đã tiếp nhận công việc bạn giao",
+                    time: "11 ngày trước",
+                    taskName: "Khảo sát hạ tầng mạng Chi nhánh 2",
+                    description: "Đã tiếp nhận việc.",
+                    tag: "Đã tiếp nhận", start: "11/06/2026", end: "14/06/2026", actionTime: "11/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L5",
+                    system: "Chuyên viên không tiếp nhận việc",
+                    content: "<b>Trần Văn A</b> không tiếp nhận công việc bạn giao",
+                    time: "11 ngày trước",
+                    taskName: "Khảo sát hạ tầng mạng Chi nhánh 2",
+                    description: "Từ chối tiếp nhận việc do trùng lịch công tác tại tỉnh từ ngày 12/06 đến ngày 18/06/2026.",
+                    tag: "Từ chối", start: "11/06/2026", end: "14/06/2026", actionTime: "11/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L6",
+                    system: "Chuyên viên chuyển giao công việc",
+                    content: "<b>Trần Văn A</b> đã chuyển giao công việc cho Nguyễn Thị C",
+                    time: "12 ngày trước",
+                    taskName: "Soạn thảo hợp đồng mua sắm thiết bị IT",
+                    description: "Chuyển giao toàn bộ dữ liệu gói thầu và danh mục thiết bị sang cho Nguyễn Thị C hỗ trợ do quá tải đầu việc.",
+                    tag: "Chuyển giao", start: "05/06/2026", end: "18/06/2026", actionTime: "10/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L7",
+                    system: "Chuyên viên gửi phiếu đánh giá KPI",
+                    content: "<b>Trần Văn A</b> đã gửi phiếu đánh giá KPI tháng 5",
+                    time: "15 ngày trước",
+                    taskName: "Kỳ đánh giá KPI tháng 5/2026",
+                    description: "Báo cáo tự đánh giá kết quả hoàn thành công việc và các chỉ số cam kết chất lượng trong tháng 5.",
+                    tag: "Chờ duyệt", start: "01/06/2026", end: "05/06/2026", actionTime: "04/06/2026", sender: "Trần Văn A"
+                },
+                {
+                    id: "L8",
+                    system: "Chuyên viên bình luận công việc",
+                    content: "<b>Trần Văn A</b> đã bình luận về công việc",
+                    time: "20 ngày trước",
+                    taskName: "Cập nhật dữ liệu nhân sự lên hệ thống quản lý",
+                    description: "Dạ em nhận thông tin ạ!",
+                    tag: "Có bình luận", start: "25/05/2026", end: "05/06/2026", actionTime: "30/05/2026", sender: "Trần Văn A"
+                }
+            ],
+            CHUYEN_VIEN: [
+                {
+                    id: "C1",
+                    system: "Lãnh đạo trả kế hoạch đã duyệt về chuyên viên",
+                    content: "Lãnh đạo <b>Bùi Công B</b> đã phê duyệt kế hoạch công việc của bạn",
+                    time: "Vừa xong",
+                    taskName: "Nâng cấp bảo mật cổng thông tin",
+                    description: "Kế hoạch chi tiết đã được phê duyệt thông qua. Yêu cầu triển khai đúng tiến độ đề ra.",
+                    tag: "Đã duyệt", start: "18/06/2026", end: "30/06/2026", actionTime: "19/06/2026", sender: "Bùi Công B"
+                },
+                {
+                    id: "C2",
+                    system: "Lãnh đạo đánh giá tiến độ công việc",
+                    content: "Lãnh đạo <b>Bùi Công B</b> đã đánh giá tiến độ công việc của bạn",
+                    time: "30 phút trước",
+                    taskName: "Thiết kế giao diện chức năng Dashboard",
+                    description: "Đánh giá: Giao diện trực quan, tuy nhiên cần làm nổi bật hơn phần biểu đồ tròn thống kê tỷ lệ.",
+                    tag: "Đã đánh giá", start: "15/06/2026", end: "22/06/2026", actionTime: "19/06/2026", sender: "Bùi Công B"
+                },
+                {
+                    id: "C3",
+                    system: "Lãnh đạo giao việc cho chuyên viên",
+                    content: "Lãnh đạo <b>Bùi Công B</b> đã giao việc cho bạn",
+                    time: "3 ngày trước",
+                    taskName: "Biên soạn cẩm nang hướng dẫn sử dụng phần mềm 1C",
+                    description: "Biên soạn nội dung chi tiết kèm hình ảnh minh họa cho phân hệ Đánh giá cán bộ công chức.",
+                    tag: "Cần làm", start: "16/06/2026", end: "26/06/2026", actionTime: "16/06/2026", sender: "Bùi Công B"
+                },
+                // {
+                //     id: "C4",
+                //     system: "Chuyên viên nhận việc",
+                //     content: "Lãnh đạo <b>Bùi Công B</b> đã tiếp nhận công việc bạn giao",
+                //     time: "5 ngày trước",
+                //     taskName: "Báo cáo số liệu tổng hợp văn thư quý 1",
+                //     description: "Hệ thống ghi nhận Lãnh đạo đã mở và tiếp nhận hồ sơ tổng hợp số liệu văn thư lưu trữ.",
+                //     tag: "Đã tiếp nhận", start: "10/06/2026", end: "15/06/2026", actionTime: "14/06/2026", sender: "Bùi Công B"
+                // },
+                {
+                    id: "C5",
+                    system: "Lãnh đạo hoàn thành đánh giá KPI cho chuyên viên",
+                    content: "Lãnh đạo <b>Bùi Công B</b> đã phê duyệt phiếu KPI của bạn",
+                    time: "11 ngày trước",
+                    taskName: "Kỳ đánh giá KPI TEST lần 3 tháng 6",
+                    description: "Kết quả chấm điểm và xếp loại chính thức từ Hội đồng đánh giá cho kỳ kiểm tra năng lực số 3.",
+                    tag: "Hoàn thành", start: "05/06/2026", end: "12/06/2026", actionTime: "11/06/2026", sender: "Bùi Công B"
+                },
+                {
+                    id: "C6",
+                    system: "Lãnh đạo nhắc nhở công việc chưa báo cáo tiến độ và chuyên viên chưa báo cáo tiến độ (trước 1 ngày kết thúc công việc)",
+                    content: "Bạn có công việc chưa báo cáo tiến độ đúng hạn",
+                    time: "12 ngày trước",
+                    taskName: "Kiểm thử phân hệ Ký Số điện tử",
+                    description: "Nhắc nhở: Công việc đã thực hiện quá 50% thời gian quy định nhưng chưa cập nhật trạng thái tiến độ trên hệ thống.",
+                    tag: "Chậm tiến độ", start: "04/06/2026", end: "14/06/2026", actionTime: "12/06/2026", sender: "Bùi Công B"
+                },
+                {
+                    id: "C7",
+                    system: "Lãnh đạo bình luận trên công việc",
+                    content: "Lãnh đạo <b>Bùi Công B</b> đã bình luận trên công việc của bạn",
+                    time: "14 ngày trước",
+                    taskName: "Cấu hình Server chạy thử nghiệm (Staging)",
+                    description: "Bình luận mới: 'Kiểm tra lại dung lượng RAM cấp phát cho Docker container xem có bị nghẽn không em nhé'.",
+                    tag: "Có bình luận", start: "02/06/2026", end: "10/06/2026", actionTime: "05/06/2026", sender: "Bùi Công B"
+                }
+            ]
+        };
+
+        let currentRole = "LANH_DAO";
+
+        // Hàm render danh sách thông báo bên cột phải
+        function renderNotifications() {
+            const listContainer = document.getElementById("notificationList");
+            const countBadge = document.getElementById("noti-count");
+            const items = dataNotifications[currentRole];
+            
+            countBadge.innerText = items.length;
+            listContainer.innerHTML = "";
+
+            items.forEach((item) => {
+                const notiHtml = `
+                    <div class="noti-item" id="noti-${item.id}" onclick="showTaskDetail('${item.id}')">
+                        <div class="noti-avatar">TP</div>
+                        <div class="noti-body">
+                            <div class="noti-text">${item.content}</div>
+                            <div class="noti-task-name">Công việc: ${item.taskName}</div>
+                            <div class="noti-time">${item.time}</div>
+                            <div>
+                                <span class="system-tag"><i class="fa-solid fa-circle-info"></i> Xử lý: ${item.system}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                listContainer.innerHTML += notiHtml;
+            });
+            
+            // Tự động clear màn hình chi tiết về trạng thái trống khi đổi vai trò
+            clearDetail();
+        }
+
+        // Hàm hiển thị chi tiết sang cột giữa khi click chọn một thông báo
+        function showTaskDetail(id) {
+            const activeItems = document.querySelectorAll('.noti-item');
+            activeItems.forEach(el => el.classList.remove('active-item'));
+            
+            const targetNoti = document.getElementById(`noti-${id}`);
+            if(targetNoti) targetNoti.classList.add('active-item');
+
+            const items = dataNotifications[currentRole];
+            const task = items.find(i => i.id === id);
+            
+            if(!task) return;
+
+            const detailContainer = document.getElementById("detailContainer");
+            
+            detailContainer.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-title-area">
+                        <div class="detail-avatar">TH</div>
+                        <div class="detail-user-info">
+                            <h4>${task.sender}</h4>
+                            <span>7 ngày trước</span>
+                        </div>
+                    </div>
+                    <div class="close-detail-btn" onclick="clearDetail()"><i class="fa-solid fa-xmark"></i></div>
+                </div>
+                
+                <div class="detail-body">
+                    <div class="task-category">Công việc hành chính:</div>
+                    <div class="task-title">${task.taskName}</div>
+                    
+                    <div class="task-tags">
+                        <span class="badge badge-status">${task.tag}</span>
+                        <span class="badge badge-time">Bắt đầu: ${task.start}</span>
+                        <span class="badge badge-time">Kết thúc: ${task.end}</span>
+                        <span class="badge badge-type">Công việc chung</span>
+                    </div>
+
+                    <div style="font-size: 13px; color: #666; margin-bottom: 5px;">
+                        <i class="fa-regular fa-paper-plane"></i> <b>Ngày gửi hệ thống:</b> ${task.actionTime}
+                    </div>
+                    <div style="font-size: 13px; color: #0a4b7c; margin-bottom: 15px;">
+                        <i class="fa-solid fa-gears"></i> <b>Luồng xử lý:</b> ${task.system}
+                    </div>
+
+                    <div class="comment-box-wrapper">
+                        <div class="comment-box-title">Bình luận, trao đổi nội dung chi tiết</div>
+                        <div class="comment-content">${task.description}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function clearDetail() {
+            document.getElementById("detailContainer").innerHTML = `
+                <div class="empty-state">
+                    <i class="fa-regular fa-folder-open fa-3x" style="margin-bottom: 10px; color: #ccc;"></i>
+                    <p>Chọn một thông báo ở danh sách bên phải để xem chi tiết công việc</p>
+                </div>`;
+            const activeItems = document.querySelectorAll('.noti-item');
+            activeItems.forEach(el => el.classList.remove('active-item'));
+        }
+
+        // Hàm luân phiên đổi vai trò User khi click avatar
+        function switchRole() {
+            const textDisplay = document.getElementById("current-user-name");
+            if (currentRole === "LANH_DAO") {
+                currentRole = "CHUYEN_VIEN";
+                textDisplay.innerText = "Chuyên viên";
+            } else {
+                currentRole = "LANH_DAO";
+                textDisplay.innerText = "Lãnh đạo";
+            }
+            renderNotifications();
+        }
+
+        window.onload = function() {
+            renderNotifications();
+        }
+    </script>
+</body>
+</html>
